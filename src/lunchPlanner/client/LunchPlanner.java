@@ -2,6 +2,8 @@ package lunchPlanner.client;
 
 
 import java.util.ArrayList;
+import java.util.HashMap;
+
 
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
@@ -10,7 +12,9 @@ import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.dom.client.KeyUpEvent;
 import com.google.gwt.event.dom.client.KeyUpHandler;
+import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
+import com.google.gwt.user.client.rpc.IsSerializable;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.DialogBox;
 import com.google.gwt.user.client.ui.HTML;
@@ -18,6 +22,8 @@ import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
+
+import com.google.gwt.core.client.*;
 
 /**
  * Entry point classes define <code>onModuleLoad()</code>.
@@ -36,7 +42,10 @@ public class LunchPlanner implements EntryPoint {
 	 */
 	private final GreetingServiceAsync greetingService = GWT
 			.create(GreetingService.class);
-	private final VoteServiceAsync voteService = GWT.create(VoteService.class);
+	//private final VoteServiceAsync voteService = GWT.create(VoteService.class);
+	
+	
+	private final LunchServiceAsync lunchService = GWT.create(LunchService.class);
 
 	/**
 	 * This is the entry point method.
@@ -145,26 +154,100 @@ public class LunchPlanner implements EntryPoint {
 //		sendButton.addClickHandler(handler);
 //		nameField.addKeyUpHandler(handler);
 		
-		final VoteWidget theVoteWidget = new VoteWidget();
-		RootPanel.get("ming").add(theVoteWidget);
+		/*final Button testRPCButton = new Button("Ming");
+		RootPanel.get("sendButtonContainer").add(testRPCButton);
+		class VoteServiceRequestObject implements IsSerializable {
+			/**
+			   * This field is a Map that must always contain Strings as its keys and
+			   * values.
+			   * 
+			   * @gwt.typeArgs <java.lang.String,java.lang.String>
+			   */
+		/*
+			public HashMap mapOfStringToString;
+			
+			public VoteServiceRequestObject(){
+				mapOfStringToString = new HashMap();
+			}
+			
+			public void add (String key, String value){
+				mapOfStringToString.put(key, value);
+			}
+
+		}*/
 		
-		final Button voteButton = new Button("Vote!");
-		RootPanel.get("voteButton").add(voteButton);
+		//VoteServiceRequestObject request = new VoteServiceRequestObject();
+		//request.add("name", "ming");
 		
-		class VoteButtonHandler implements ClickHandler{
+		
+		/*class TestHandler implements ClickHandler{
 			@Override
 			public void onClick(ClickEvent event) {
-				ArrayList<String> newRestaurants = new ArrayList();
-				newRestaurants.add("Pierre");
-				newRestaurants.add("Pierre2");
-				theVoteWidget.updateVoteOptions(newRestaurants);
+				voteService.voteServer(" ",
+						new AsyncCallback<String>() {
+							public void onFailure(Throwable caught) {
+							}
+							public void onSuccess(String result) {
+								//RootPanel.
+								Window.Location.assign(result);
+								Window.alert(result);
+							}
+						});
+			}
+		}*/
+		
+		//TestHandler theTestHandler = new TestHandler();
+		//testRPCButton.addClickHandler(theTestHandler);
+		
+		final VoteWidget theVoteWidget = new VoteWidget();
+		RootPanel.get("restaurantList").add(theVoteWidget);
+		
+		//final Button voteButton = new Button("Vote!");
+		//RootPanel.get("voteButton").add(voteButton);
+		
+		//final Button anyButton = new Button("Any!");
+		//RootPanel.get("anyButton").add(anyButton);
+		
+		/*class VoteButtonHandler implements ClickHandler{
+			@Override
+			public void onClick(ClickEvent event) {
+				//theVoteWidget.
+				///ArrayList<String> newRestaurants = new ArrayList();
+				//newRestaurants.add("Pierre");
+				//newRestaurants.add("Pierre2");
+				//theVoteWidget.updateVoteOptions(newRestaurants);
+				//String name = theVoteWidget.getSelectedRadioButton();
+				//Window.alert(name);
 			}
 		}
 		
-		VoteButtonHandler theVoteButtonHandler = new VoteButtonHandler();
-		voteButton.addClickHandler(theVoteButtonHandler);
+		//VoteButtonHandler theVoteButtonHandler = new VoteButtonHandler();
+		//voteButton.addClickHandler(theVoteButtonHandler);
 		
 		
+		/*class LunchButtonHandler implements ClickHandler{
+			@Override
+			public void onClick(ClickEvent event) {
+				ArrayList<LunchRequest> temp = new ArrayList<LunchRequest>();
+				LunchRequest temp2 = new LunchRequest();
+				temp2.setValue("requestType", "vote");
+				temp2.setValue("voteTarget", theVoteWidget.getSelectedRadioButton());
+				temp.add(temp2);
+				lunchService.VoteRequest(temp,
+						new AsyncCallback<String>() {
+							public void onFailure(Throwable caught) {
+							}
+							public void onSuccess(String result) {
+								//RootPanel.
+								Window.Location.assign(result);
+								Window.alert(result);
+							}
+						});
+			}
+		}*/
 		
+		//LunchButtonHandler lunchButtonHandler = new LunchButtonHandler();
+		//anyButton.addClickHandler(lunchButtonHandler);
+
 	}
 }
