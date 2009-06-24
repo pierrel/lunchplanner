@@ -21,6 +21,11 @@
     <servlet-class>lunchPlanner.server.VoteServiceImpl</servlet-class>
   </servlet>
   
+    <servlet>
+    <servlet-name>LunchServlet</servlet-name>
+    <servlet-class>lunchPlanner.server.LunchServiceImpl</servlet-class>
+  </servlet>
+  
   <servlet-mapping>
     <servlet-name>greetServlet</servlet-name>
     <url-pattern>/lunchplanner/greet</url-pattern>
@@ -29,5 +34,10 @@
   <servlet-mapping>
     <servlet-name>voteServlet</servlet-name>
     <url-pattern>/lunchplanner/vote</url-pattern>
+  </servlet-mapping>
+  
+  <servlet-mapping>
+    <servlet-name>LunchServlet</servlet-name>
+    <url-pattern>/lunchplanner/lunch</url-pattern>
   </servlet-mapping>
 </web-app>
