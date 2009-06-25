@@ -10,6 +10,11 @@ h1 {
   text-align: center;
 }
 
+.cw-FlexTable td {
+  border: 1px solid #BBBBBB;
+  padding: 3px;
+}
+
 .sendButton {
   display: block;
   font-size: 16pt;
@@ -32,3 +37,5 @@ h1 {
 #closeButton {
   margin: 15px 6px 6px;
 }
+
+

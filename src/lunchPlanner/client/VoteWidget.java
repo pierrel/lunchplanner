@@ -9,11 +9,14 @@ import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.Composite;
+import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.HTML;
+import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.RadioButton;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
+import com.google.gwt.user.client.ui.FlexTable.FlexCellFormatter;
 
 public class VoteWidget extends Composite{
 	private final VoteServiceAsync voteService = GWT
@@ -29,24 +32,34 @@ public class VoteWidget extends Composite{
 	ArrayList<HTML> restaurantVotesHTML;
 	TextBox RestaurantNameEntry;
 	Button submitRestaurant;
+	FlexTable flexTable;
 	public VoteWidget(){
+		flexTable = new FlexTable();
 		widgetVPanel = new VerticalPanel();
+		
+		FlexCellFormatter cellFormatter = flexTable.getFlexCellFormatter();
+		flexTable.addStyleName("cw-FlexTable");
+		//flexTable.setWidth("32em");
+		flexTable.setCellSpacing(5);
+		flexTable.setCellPadding(3);
+		cellFormatter.setHorizontalAlignment(0, 1,
+				HasHorizontalAlignment.ALIGN_LEFT);
+		cellFormatter.setColSpan(0, 0, 2);
+		
+		
 		HorizontalPanel hPanelRestaurants = new HorizontalPanel();
 		vPanelRadio = new VerticalPanel();
 		vPanelVoteCount = new VerticalPanel();
-		hPanelRestaurants.add(vPanelRadio);
-		hPanelRestaurants.add(vPanelVoteCount);
 		voteButton = new Button("Vote!");
 		RestaurantNameEntry = new TextBox();
 		submitRestaurant = new Button("Submit Restaurant");
-		widgetVPanel.add(new HTML("Restaurants"));
-		widgetVPanel.add(hPanelRestaurants);
+		widgetVPanel.add(flexTable);
 		widgetVPanel.add(voteButton);
 		widgetVPanel.add(new HTML("Enter a Restaurant Name:"));
 		widgetVPanel.add(RestaurantNameEntry);
 		widgetVPanel.add(submitRestaurant);
 		restaurants = new ArrayList();
-		radioButtons = new ArrayList();		
+		radioButtons = new ArrayList();	
 		getRestaurants();
 		
 		//now we attach listeners to the vote button
@@ -92,18 +105,20 @@ public class VoteWidget extends Composite{
 		restaurants2 = (ArrayList<Restaurant>)newRestaurants.clone();
 		radioButtons = new ArrayList();
 		restaurantVotesHTML = new ArrayList();
+		int count = 0;
 		for(Restaurant each : newRestaurants){
+			count++;
 			RadioButton radioButton = new RadioButton("restaurants", each.getName());
 			radioButton.ensureDebugId("restaurants-" + each.getName());
 			radioButtons.add(radioButton);
 			HTML voteCount = new HTML(String.valueOf(each.getVoteCount()));
 			restaurantVotesHTML.add(voteCount);
-			vPanelRadio.add(radioButton);
-			vPanelVoteCount.add(voteCount);
-			//HorizontalPanel hPanel = new HorizontalPanel();
-			//hPanel.add(radioButton);
-			//hPanel.add(voteCount);
-			//vPanel.add(hPanel);
+			//vPanelRadio.add(radioButton);
+			//vPanelVoteCount.add(voteCount);
+			
+			
+			flexTable.setWidget(count, 0, radioButton);
+			flexTable.setWidget(count, 1, voteCount);
 		}
 	}
 	
@@ -125,6 +140,13 @@ public class VoteWidget extends Composite{
 							public void onSuccess(ArrayList result) {
 								if(result != null){
 									LunchRequest reply = (LunchRequest)result.get(0);
+									String isUserValid = reply.getValue("isUserValid");
+									String notValid = "notValid";
+									if(notValid.equals(isUserValid)){
+										Window.Location.assign(reply.getValue("userURL"));
+										return;
+									}
+									
 									String restaurantName = reply.getValue("voteTarget");
 									int voteCount = Integer.parseInt(reply.getValue("voteCount"));
 									for(Restaurant each : restaurants2){

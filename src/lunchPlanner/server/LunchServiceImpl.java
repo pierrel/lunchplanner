@@ -2,23 +2,34 @@ package lunchPlanner.server;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Properties;
+
+import javax.mail.Message;
+import javax.mail.Session;
+import javax.mail.Transport;
+import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeMessage;
 
 import lunchPlanner.client.LunchService;
 import lunchPlanner.client.LunchRequest;
 
 
+import com.google.appengine.api.users.User;
+import com.google.appengine.api.users.UserService;
+import com.google.appengine.api.users.UserServiceFactory;
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
+
+
 
 public class LunchServiceImpl extends RemoteServiceServlet implements LunchService{
 
 	//ArrayList<Integer> voteList = new ArrayList<Integer>();
 	//ArrayList<Restaurant> restaurantList = new ArrayList<Restaurant>();
 	HashMap<String, Restaurant> restaurantList;
+	HashMap<String, String> userVotedList;
 	@Override
 	public ArrayList ProcessRequest(ArrayList listOfRequests) {
-		// TODO Auto-generated method stub
 		String requestType = ((LunchRequest)listOfRequests.get(0)).getValue("requestType");
-		
 		return null;
 	}
 	
@@ -26,11 +37,46 @@ public class LunchServiceImpl extends RemoteServiceServlet implements LunchServi
 	public ArrayList VoteRequest(ArrayList listOfRequests){
 		//if we are in here then we want to vote
 		//HashMap<String, Restaurant> restaurantList = (HashMap<String, Restaurant>) DataStoreUtility.getCached("restaurantCounts");
+		
+		//we're checking if user is valid
+		UserService userService = UserServiceFactory.getUserService();
+		User user = userService.getCurrentUser();
+		LunchRequest lunchRequest = new LunchRequest();
+		if(user == null){
+			lunchRequest.setValue("isUserValid", "notValid");
+			String sourceURL = this.getServletContext().getContextPath();
+			lunchRequest.setValue("userURL", userService.createLoginURL(sourceURL));
+			ArrayList<LunchRequest> theRequest = new ArrayList<LunchRequest>();
+			theRequest.add(lunchRequest);
+			return theRequest;	
+		}
+			
+		
+		
 		if(restaurantList == null)
 			restaurantList = new HashMap<String, Restaurant>();
 		
+		if(userVotedList == null)
+			userVotedList = new HashMap<String, String>();
+		
 		String voteChoice = ((LunchRequest)listOfRequests.get(0)).getValue("voteTarget");
 		Restaurant votedRestaurant = restaurantList.get(voteChoice);
+		
+		//checking if we have already voted
+		if(userVotedList.get(user.getEmail()) != null){
+			lunchRequest.setValue("voteCount", String.valueOf(votedRestaurant.getVoteCount()));
+			lunchRequest.setValue("voteTarget", voteChoice);
+			ArrayList<LunchRequest> theRequest = new ArrayList<LunchRequest>();
+			theRequest.add(lunchRequest);
+			return theRequest;	
+		}
+		
+		//sending an email
+		sendEmail(user, voteChoice);
+		
+		//marking that you have voted
+		userVotedList.put(user.getEmail(), "voted");
+		
 		if(votedRestaurant != null){
 			votedRestaurant.setVoteCount(votedRestaurant.getVoteCount() + 1);
 			restaurantList.put(voteChoice, votedRestaurant);
@@ -38,7 +84,6 @@ public class LunchServiceImpl extends RemoteServiceServlet implements LunchServi
 			//putting into data cache
 			//DataStoreUtility.putCached("restaurantCounts", restaurantList);
 			
-			LunchRequest lunchRequest = new LunchRequest();
 			lunchRequest.setValue("voteCount", String.valueOf(votedRestaurant.getVoteCount()));
 			lunchRequest.setValue("voteTarget", voteChoice);
 			ArrayList<LunchRequest> theRequest = new ArrayList<LunchRequest>();
@@ -92,6 +137,26 @@ public class LunchServiceImpl extends RemoteServiceServlet implements LunchServi
 			theRequest.add(request);
 		}
 		return theRequest;
+	}
+	
+	
+	public void sendEmail(User user, String restaurantName){
+		Properties props = new Properties();
+        Session session = Session.getDefaultInstance(props, null);
+        String msgBody = "You have voted for " + restaurantName + "\nThank you for your cooperation." +
+        	"\n-The Ming Lunch Team";
+        try {
+        	Message msg = new MimeMessage(session);
+            msg.setFrom(new InternetAddress(user.getEmail()));
+            msg.addRecipient(Message.RecipientType.TO,
+                             new InternetAddress(user.getEmail(), user.getNickname()));
+            msg.setSubject("MingLunch: You have voted for your lunch choice");
+            msg.setText(msgBody);
+            Transport.send(msg);
+        }catch(Exception e){
+        	System.out.println(e.getMessage());
+        }
+
 	}
 	
 	
